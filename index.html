@@ -1,0 +1,2429 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sistema web de control de asistencia del personal de Carpenters Languages</title>
+
+  <!-- Google Fonts: Poppins -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Bootstrap 5.3.2 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <!-- DataTables 1.13.6 + Buttons 2.4.2 CSS -->
+  <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+  <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.2/css/buttons.dataTables.min.css">
+
+  <style>
+    :root {
+      --bg-blue-deep: #001A57;
+      --bg-navy-input: #112240;
+      --bg-admin-dark: #1b1b1b;
+      --bg-docente-dark: #0d1b2a;
+      --bg-light-form: #e8eef5;
+      --accent-blue: #3FA9F5;
+      --accent-blue-hover: #1F8CD6;
+    }
+
+    * {
+      box-sizing: border-box;
+      font-family: "Poppins", sans-serif;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background-color: #001A57;
+      color: #f0f0f0;
+      transition: background-color 0.25s ease, color 0.25s ease;
+    }
+
+    /* Fondos dinámicos según la vista activa (Replicación exacta del documento) */
+    body.theme-login {
+      background-color: #001A57;
+      color: #f0f0f0;
+    }
+    body.theme-admin {
+      background-color: #1b1b1b;
+      color: #e6e6e6;
+    }
+    body.theme-docente {
+      background-color: #0d1b2a;
+      color: #e0e6ed;
+    }
+    body.theme-table-dark {
+      background-color: #212529;
+      color: #f8f9fa;
+    }
+    body.theme-form-light {
+      background-color: #e8eef5;
+      color: #1a1a1a;
+    }
+
+    /* Sistema SPA de vistas ocultas */
+    .spa-view {
+      display: none;
+      min-height: 100vh;
+      width: 100%;
+    }
+    .spa-view.active-view {
+      display: block;
+    }
+    .spa-view.flex-center.active-view {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    /* Tarjeta de Login y Pantalla 0 (login.jsp) */
+    .login-card {
+      background-color: rgba(0, 0, 0, 0.45);
+      backdrop-filter: blur(6px);
+      border-radius: 18px;
+      padding: 32px;
+      width: 100%;
+      max-width: 430px;
+      box-shadow: 0 4px 25px rgba(0, 0, 0, 0.5);
+      text-align: center;
+      border: 1px solid rgba(63, 169, 245, 0.2);
+    }
+
+    .logo-svg {
+      width: 155px;
+      height: auto;
+      margin-bottom: 16px;
+      filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.3));
+    }
+
+    .login-card h3,
+    .login-card h5 {
+      color: #E0E8FF;
+    }
+
+    .dark-input {
+      background-color: #112240 !important;
+      border: 1px solid #233554 !important;
+      color: #ffffff !important;
+    }
+    .dark-input::placeholder {
+      color: #8892b0 !important;
+    }
+    .dark-input:focus {
+      background-color: #112240 !important;
+      border-color: #3FA9F5 !important;
+      color: #ffffff !important;
+      box-shadow: 0 0 6px #3FA9F5 !important;
+    }
+
+    .btn-login-primary {
+      background-color: #3FA9F5;
+      border-color: #3FA9F5;
+      color: #ffffff;
+      font-weight: 700;
+    }
+    .btn-login-primary:hover {
+      background-color: #1F8CD6;
+      border-color: #1F8CD6;
+      color: #ffffff;
+    }
+
+    /* Bloque de Credenciales de Prueba en Login */
+    .trial-credentials-box {
+      background-color: rgba(17, 34, 64, 0.9);
+      border: 1px solid #3FA9F5;
+      border-radius: 12px;
+      padding: 12px 14px;
+      margin-top: 18px;
+      text-align: left;
+      font-size: 0.85rem;
+      color: #e0e8ff;
+    }
+    .trial-credentials-box .cred-title {
+      font-weight: 700;
+      color: #3FA9F5;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .cred-badge {
+      background-color: rgba(63, 169, 245, 0.18);
+      border: 1px solid rgba(63, 169, 245, 0.45);
+      color: #ffffff;
+      padding: 2px 8px;
+      border-radius: 6px;
+      font-family: monospace;
+      font-size: 0.82rem;
+    }
+
+    /* Panel Administrador (homeAdmin.jsp) */
+    .admin-card {
+      background-color: #2b2b2b;
+      padding: 30px;
+      border-radius: 15px;
+      box-shadow: 0 0 25px rgba(0, 0, 0, 0.4);
+      width: 100%;
+      max-width: 420px;
+    }
+    .admin-card .list-group-item {
+      background-color: #323232;
+      color: #f0f0f0;
+      border: 1px solid #444;
+      transition: 0.2s;
+      cursor: pointer;
+      text-align: left;
+    }
+    .admin-card .list-group-item:hover {
+      background-color: #3c3c3c;
+      color: #ffffff;
+    }
+    .btn-admin-danger {
+      background-color: #d9534f;
+      border-color: #d9534f;
+      color: #ffffff;
+    }
+    .btn-admin-danger:hover {
+      background-color: #c9302c;
+      border-color: #c9302c;
+      color: #ffffff;
+    }
+
+    /* Panel Docente y Personal (homeDocente.jsp / homePersonal.jsp) */
+    .doc-card {
+      background-color: #1b263b;
+      padding: 30px;
+      border-radius: 15px;
+      width: 100%;
+      max-width: 420px;
+      box-shadow: 0 0 25px rgba(0, 0, 0, 0.35);
+    }
+    .doc-card .list-group-item {
+      background-color: #24324a;
+      color: #e0e6ed;
+      border: 1px solid #324766;
+      transition: 0.25s;
+      cursor: pointer;
+      text-align: left;
+    }
+    .doc-card .list-group-item:hover {
+      background-color: #2e455f;
+      color: #ffffff;
+    }
+    .btn-doc-danger {
+      background-color: #b02a37;
+      border: none;
+      color: #ffffff;
+    }
+    .btn-doc-danger:hover {
+      background-color: #90212d;
+      color: #ffffff;
+    }
+
+    /* Vista Marcar Asistencia (marcar.jsp) */
+    .marcar-wrapper {
+      position: relative;
+      min-height: 100vh;
+      padding: 60px 20px 30px;
+    }
+    .logout-btn-top {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: #b02a37;
+      color: white;
+      padding: 8px 14px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-size: 0.9rem;
+      font-weight: 600;
+      border: none;
+      box-shadow: 0 0 12px rgba(0, 0, 0, 0.4);
+    }
+    .logout-btn-top:hover {
+      background: #90212d;
+      color: white;
+    }
+    .volver-btn-top {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      background: #24324a;
+      color: #e0e6ed;
+      padding: 8px 14px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-size: 0.9rem;
+      font-weight: 600;
+      border: 1px solid #324766;
+    }
+    .volver-btn-top:hover {
+      background: #2e455f;
+      color: white;
+    }
+    .marcar-card {
+      background-color: #1b263b;
+      padding: 35px;
+      border-radius: 18px;
+      max-width: 440px;
+      margin: 40px auto 0;
+      box-shadow: 0 0 25px rgba(0, 0, 0, 0.45);
+      text-align: center;
+    }
+    .marcar-card h2 {
+      color: #4da3ff;
+      font-weight: 700;
+      margin-bottom: 20px;
+    }
+    .marcar-date {
+      color: #c5cee0;
+      margin-bottom: 12px;
+      font-size: 1.05rem;
+    }
+    .marcar-time {
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: #f8fafc;
+      letter-spacing: 1px;
+    }
+    .btn-marcar-primary {
+      background-color: #2563eb;
+      border: none;
+      color: #ffffff;
+      font-weight: 600;
+      padding: 10px 16px;
+    }
+    .btn-marcar-primary:hover {
+      background-color: #1e40af;
+      color: #ffffff;
+    }
+    .msg-ok {
+      margin-top: 15px;
+      padding: 12px;
+      border-radius: 8px;
+      background-color: #122c47;
+      color: #4ade80;
+      font-weight: 600;
+      border: 1px solid rgba(74, 222, 128, 0.35);
+    }
+    .msg-err {
+      margin-top: 15px;
+      padding: 12px;
+      border-radius: 8px;
+      background-color: #2d1a1a;
+      color: #ff7373;
+      font-weight: 600;
+      border: 1px solid rgba(255, 115, 115, 0.35);
+    }
+
+    /* Formularios de creación y edición (crear.jsp / editar.jsp) */
+    .light-form-wrapper {
+      padding: 40px 16px;
+      min-height: 100vh;
+    }
+    .card-form {
+      background: #ffffff;
+      border-radius: 14px;
+      padding: 35px;
+      max-width: 550px;
+      margin: auto;
+      box-shadow: 0 4px 25px rgba(0, 0, 0, 0.12);
+      color: #1a1a1a;
+    }
+    .card-form h3 {
+      color: #0d47a1;
+      font-weight: 700;
+      margin-bottom: 25px;
+      text-align: center;
+    }
+    .card-form label {
+      font-weight: 600;
+      color: #0a2a4d;
+    }
+    .card-form .form-control,
+    .card-form .form-select {
+      background: #f8f9fc;
+      border: 1px solid #b8c6d6;
+      color: #1a1a1a;
+    }
+    .card-form .form-control:focus,
+    .card-form .form-select:focus {
+      border-color: #0d6efd;
+      box-shadow: 0 0 6px rgba(13, 110, 253, 0.4);
+    }
+
+    /* Ajustes de DataTables en tema oscuro */
+    .dataTables_wrapper .dataTables_length,
+    .dataTables_wrapper .dataTables_filter,
+    .dataTables_wrapper .dataTables_info,
+    .dataTables_wrapper .dataTables_processing,
+    .dataTables_wrapper .dataTables_paginate {
+      color: #e0e6ed !important;
+      margin-top: 8px;
+      margin-bottom: 8px;
+    }
+    .dataTables_wrapper .dataTables_length select,
+    .dataTables_wrapper .dataTables_filter input {
+      background-color: #112240 !important;
+      color: #ffffff !important;
+      border: 1px solid #324766 !important;
+      border-radius: 6px;
+      padding: 4px 8px;
+    }
+    .dataTables_wrapper .dataTables_paginate .paginate_button {
+      color: #e0e6ed !important;
+    }
+    .dt-buttons .btn {
+      margin-right: 6px;
+      margin-bottom: 8px;
+    }
+
+    /* Simulador de hora para pruebas académicas de Turno 1 y Turno 2 */
+    .sim-clock-box {
+      margin-top: 18px;
+      padding: 12px;
+      border-radius: 10px;
+      background-color: rgba(13, 27, 42, 0.75);
+      border: 1px dashed #324766;
+      text-align: left;
+      font-size: 0.84rem;
+    }
+  </style>
+</head>
+<body class="theme-login" onload="purgarYReiniciarSistema()">
+
+  <!-- ===================================================================== -->
+  <!-- PANTALLA 0: ACCESO A PRUEBA GRATUITA (Prioridad Máxima, siempre al inicio) -->
+  <!-- ===================================================================== -->
+  <section id="view-free-trial" class="spa-view flex-center active-view">
+    <div class="login-card">
+      <!-- Logo institucional vectorial inspirado en Carpenters Languages (pág. 5) -->
+      <svg class="logo-svg" viewBox="0 0 220 120" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Carpenters Languages Logo">
+        <defs>
+          <linearGradient id="bgShield" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#ffffff"/>
+            <stop offset="100%" stop-color="#dbeafe"/>
+          </linearGradient>
+        </defs>
+        <path d="M25,25 Q65,8 110,22 Q155,36 195,18 L185,92 Q145,108 110,94 Q75,80 35,96 Z" fill="url(#bgShield)" stroke="#3FA9F5" stroke-width="3"/>
+        <rect x="35" y="32" width="68" height="48" rx="4" fill="#002868"/>
+        <path d="M35,40 H103 M35,50 H103 M35,60 H103 M35,70 H103" stroke="#bf0a30" stroke-width="4"/>
+        <rect x="35" y="32" width="32" height="24" fill="#002868"/>
+        <circle cx="152" cy="46" r="14" fill="#bc002d"/>
+        <text x="68" y="68" font-size="26" font-weight="700" fill="#ffffff" font-family="serif">A</text>
+        <text x="138" y="82" font-size="24" font-weight="700" fill="#001A57" font-family="sans-serif">学</text>
+      </svg>
+
+      <h3 class="mb-2 fw-bold">Acceso a Prueba Gratuita</h3>
+      <p class="text-secondary small mb-4">
+        Sistema Web de Control de Asistencia del Personal de <strong>Carpenters Languages</strong>
+      </p>
+
+      <form id="formFreeTrial" novalidate>
+        <div class="mb-3 text-start">
+          <label for="trialEmailInput" class="form-label small fw-semibold">Correo electrónico institucional o personal</label>
+          <input
+            type="email"
+            id="trialEmailInput"
+            class="form-control dark-input"
+            placeholder="ejemplo@dominio.com"
+            autocomplete="off"
+            required
+          >
+          <div class="form-text text-light opacity-75 small mt-1">
+            Ingresa un correo con formato válido para desbloquear el entorno de demostración.
+          </div>
+        </div>
+
+        <div id="trialEmailError" class="alert alert-danger py-2 small d-none" role="alert">
+          Por favor, ingresa un correo electrónico válido (ej. usuario@dominio.com).
+        </div>
+
+        <button type="submit" id="btnConfirmTrial" class="btn btn-login-primary w-100 mt-2 py-2">
+          Confirmar y Acceder a la Prueba
+        </button>
+      </form>
+    </div>
+  </section>
+
+  <!-- ===================================================================== -->
+  <!-- PANTALLA 1: LOGIN GLOBAL MODIFICADO (login.jsp)                       -->
+  <!-- ===================================================================== -->
+  <section id="view-login" class="spa-view flex-center">
+    <div class="login-card">
+      <svg class="logo-svg" viewBox="0 0 220 120" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Carpenters Languages Logo">
+        <path d="M25,25 Q65,8 110,22 Q155,36 195,18 L185,92 Q145,108 110,94 Q75,80 35,96 Z" fill="#f8fafc" stroke="#3FA9F5" stroke-width="3"/>
+        <rect x="35" y="32" width="68" height="48" rx="4" fill="#002868"/>
+        <path d="M35,40 H103 M35,50 H103 M35,60 H103 M35,70 H103" stroke="#bf0a30" stroke-width="4"/>
+        <rect x="35" y="32" width="32" height="24" fill="#002868"/>
+        <circle cx="152" cy="46" r="14" fill="#bc002d"/>
+        <text x="68" y="68" font-size="26" font-weight="700" fill="#ffffff" font-family="serif">A</text>
+        <text x="138" y="82" font-size="24" font-weight="700" fill="#001A57" font-family="sans-serif">学</text>
+      </svg>
+
+      <h3 class="text-center mb-2">Carpenters Languages</h3>
+      <h5 class="text-center text-secondary mb-4">Iniciar Sesión</h5>
+
+      <form id="formLogin" novalidate>
+        <div class="mb-3 text-start">
+          <label for="loginUsuario" class="form-label">Usuario</label>
+          <input type="text" id="loginUsuario" name="usuario" class="form-control dark-input" autocomplete="off" required>
+        </div>
+
+        <div class="mb-3 text-start">
+          <label for="loginClave" class="form-label">Contraseña</label>
+          <input type="password" id="loginClave" name="clave" class="form-control dark-input" autocomplete="off" required>
+        </div>
+
+        <div id="loginErrorAlert" class="alert alert-danger text-center py-2 d-none" role="alert">
+          Usuario o contraseña incorrectos
+        </div>
+
+        <button type="submit" id="btnLoginSubmit" class="btn btn-login-primary w-100 mt-2 py-2">
+          Ingresar
+        </button>
+      </form>
+
+      <!-- REQUERIMIENTO CLAVE: Bloque estático y visible con "Credenciales de Prueba" -->
+      <div class="trial-credentials-box">
+        <div class="cred-title">
+          <span>Credenciales de Prueba</span>
+          <span class="badge bg-primary">Demo Activa</span>
+        </div>
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <div>
+            <strong>Administrador:</strong>
+            <span class="cred-badge">admin</span> / <span class="cred-badge">admin123</span>
+          </div>
+          <button type="button" id="btnQuickFillAdmin" class="btn btn-sm btn-outline-info py-0 px-2" onclick="autocompletarLogin('admin', 'admin123')">
+            Usar
+          </button>
+        </div>
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <strong>Docente:</strong>
+            <span class="cred-badge">docente</span> / <span class="cred-badge">doc123</span>
+          </div>
+          <button type="button" id="btnQuickFillDocente" class="btn btn-sm btn-outline-info py-0 px-2" onclick="autocompletarLogin('docente', 'doc123')">
+            Usar
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================================================================== -->
+  <!-- VISTA: PANEL ADMINISTRADOR (homeAdmin.jsp)                            -->
+  <!-- ===================================================================== -->
+  <section id="view-home-admin" class="spa-view flex-center">
+    <div class="admin-card">
+      <h2 class="text-center mb-2">Panel Administrador</h2>
+      <p class="text-center text-secondary mb-2">
+        Bienvenido, <b id="adminWelcomeUser">admin</b>
+      </p>
+      <div class="text-center mb-3">
+        <span class="badge bg-secondary" id="badgeContadorUsuariosHome">Usuarios en sistema: 2 / 5 máx.</span>
+      </div>
+
+      <hr class="border-secondary">
+
+      <div class="list-group mb-3">
+        <button type="button" id="navBtnGestionarUsuarios" class="list-group-item list-group-item-action" onclick="irAGestionUsuarios()">
+          Gestionar Usuarios
+        </button>
+        <button type="button" id="navBtnGestionarDocentes" class="list-group-item list-group-item-action" onclick="irAGestionDocentes()">
+          Gestionar Docentes
+        </button>
+        <button type="button" id="navBtnGestionarPersonal" class="list-group-item list-group-item-action" onclick="irAGestionPersonal()">
+          Gestionar Personal
+        </button>
+        <button type="button" id="navBtnGestionarTurnos" class="list-group-item list-group-item-action" onclick="irAGestionTurnos()">
+          Gestionar Turnos Laborales (RF-04)
+        </button>
+        <button type="button" id="navBtnVerAsistencias" class="list-group-item list-group-item-action" onclick="irAVerAsistencias()">
+          Ver Asistencias
+        </button>
+      </div>
+
+      <button type="button" id="btnLogoutAdminHome" class="btn btn-admin-danger w-100" onclick="cerrarSesion()">
+        Cerrar Sesión
+      </button>
+    </div>
+  </section>
+
+  <!-- ===================================================================== -->
+  <!-- VISTA: PANEL DOCENTE (homeDocente.jsp)                                -->
+  <!-- ===================================================================== -->
+  <section id="view-home-docente" class="spa-view flex-center">
+    <div class="doc-card">
+      <h2 class="text-center mb-3">Panel docente</h2>
+      <p class="text-center text-secondary mb-1">
+        Usuario: <b id="docenteWelcomeUser">docente</b>
+      </p>
+      <p class="text-center small text-info mb-3" id="docenteInfoTurno"></p>
+
+      <hr class="border-secondary">
+
+      <div class="list-group mb-3">
+        <button type="button" id="btnIrMarcarDocente" class="list-group-item list-group-item-action" onclick="irAMarcarAsistencia()">
+          Marcar asistencia
+        </button>
+      </div>
+
+      <button type="button" id="btnLogoutDocenteHome" class="btn btn-doc-danger w-100 mt-2" onclick="cerrarSesion()">
+        Cerrar Sesión
+      </button>
+    </div>
+  </section>
+
+  <!-- ===================================================================== -->
+  <!-- VISTA: PANEL PERSONAL (homePersonal.jsp)                              -->
+  <!-- ===================================================================== -->
+  <section id="view-home-personal" class="spa-view flex-center">
+    <div class="doc-card">
+      <h2 class="text-center mb-3">Bienvenido, Personal</h2>
+      <p class="text-center text-secondary mb-1">
+        Usuario: <b id="personalWelcomeUser">personal</b>
+      </p>
+      <p class="text-center small text-info mb-3" id="personalInfoTurno"></p>
+
+      <hr class="border-secondary">
+
+      <div class="list-group mb-3">
+        <button type="button" id="btnIrMarcarPersonal" class="list-group-item list-group-item-action" onclick="irAMarcarAsistencia()">
+          Marcar asistencia
+        </button>
+      </div>
+
+      <button type="button" id="btnLogoutPersonalHome" class="btn btn-doc-danger w-100 mt-2" onclick="cerrarSesion()">
+        Cerrar Sesión
+      </button>
+    </div>
+  </section>
+
+  <!-- ===================================================================== -->
+  <!-- VISTA: GESTIÓN DE USUARIOS - LISTADO (usuarios/listado.jsp)           -->
+  <!-- ===================================================================== -->
+  <section id="view-usuarios-listado" class="spa-view p-4">
+    <div class="container">
+      <div class="d-flex flex-wrap justify-content-between align-items-center mb-3">
+        <h3 class="mb-0">Gestión de usuarios</h3>
+        <span class="badge bg-info text-dark fs-6" id="badgeLimiteUsuarios">
+          Capacidad de prueba: 2 / 5 usuarios
+        </span>
+      </div>
+
+      <form id="formFiltroUsuarios" class="row g-3 mb-4" onsubmit="filtrarUsuarios(event)">
+        <div class="col-md-5">
+          <label for="filtroUsuarioNombre" class="form-label">Buscar por nombre</label>
+          <input type="text" id="filtroUsuarioNombre" class="form-control" placeholder="Nombre de usuario...">
+        </div>
+        <div class="col-md-4">
+          <label for="filtroUsuarioRol" class="form-label">Rol</label>
+          <select id="filtroUsuarioRol" class="form-select">
+            <option value="todos">Todos</option>
+            <option value="admin">Admin</option>
+            <option value="docente">Docente</option>
+            <option value="personal">Personal</option>
+          </select>
+        </div>
+        <div class="col-md-3 d-flex align-items-end">
+          <button type="submit" id="btnFiltrarUsuarios" class="btn btn-primary w-100">Filtrar</button>
+        </div>
+      </form>
+
+      <div class="mb-3 d-flex align-items-center gap-3">
+        <button type="button" id="btnAbrirCrearUsuario" class="btn btn-success" onclick="intentarAbrirCrearUsuario()">
+          Nuevo Usuario
+        </button>
+        <small class="text-secondary">
+          Al crear un usuario con rol Docente o Personal, se genera automáticamente su ficha vinculada (UsuarioServlet).
+        </small>
+      </div>
+
+      <div class="table-responsive">
+        <table id="tablaUsuarios" class="table table-dark table-striped table-bordered align-middle w-100">
+          <thead class="table-light text-dark">
+            <tr>
+              <th>ID</th>
+              <th>Usuario</th>
+              <th>Rol</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="tbodyUsuarios"></tbody>
+        </table>
+      </div>
+
+      <div class="d-flex justify-content-between mt-5 pt-4 border-top border-secondary">
+        <button type="button" id="btnVolverDesdeUsuarios" class="btn btn-secondary" onclick="irAHomeSegunRol()">
+          Volver
+        </button>
+        <button type="button" id="btnLogoutUsuarios" class="btn btn-danger" onclick="cerrarSesion()">
+          Cerrar Sesión
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================================================================== -->
+  <!-- VISTA: CREAR USUARIO (usuarios/crear.jsp)                             -->
+  <!-- ===================================================================== -->
+  <section id="view-usuarios-crear" class="spa-view light-form-wrapper">
+    <div class="card-form">
+      <h3>Registrar nuevo usuario</h3>
+
+      <form id="formCrearUsuario" onsubmit="guardarNuevoUsuario(event)">
+        <div class="mb-3">
+          <label for="crearUsuarioInput" class="form-label">Usuario</label>
+          <input type="text" id="crearUsuarioInput" class="form-control" required>
+        </div>
+
+        <div class="mb-3">
+          <label for="crearClaveInput" class="form-label">Clave</label>
+          <input type="password" id="crearClaveInput" class="form-control" required>
+        </div>
+
+        <div class="mb-3">
+          <label for="crearRolSelect" class="form-label">Rol</label>
+          <select id="crearRolSelect" class="form-select">
+            <option value="admin">Administrador</option>
+            <option value="docente">Docente</option>
+            <option value="personal">Personal</option>
+          </select>
+        </div>
+
+        <div id="crearUsuarioFeedback" class="alert alert-danger py-2 small d-none" role="alert"></div>
+
+        <div class="d-flex justify-content-between mt-4">
+          <button type="submit" id="btnGuardarNuevoUsuario" class="btn btn-success fw-bold">Guardar</button>
+          <button type="button" id="btnCancelarCrearUsuario" class="btn btn-secondary" onclick="irAGestionUsuarios()">Cancelar</button>
+        </div>
+      </form>
+    </div>
+  </section>
+
+  <!-- ===================================================================== -->
+  <!-- VISTA: EDITAR USUARIO (usuarios/editar.jsp)                           -->
+  <!-- ===================================================================== -->
+  <section id="view-usuarios-editar" class="spa-view light-form-wrapper">
+    <div class="card-form">
+      <h3>Editar usuario</h3>
+
+      <form id="formEditarUsuario" onsubmit="actualizarUsuarioExistente(event)">
+        <input type="hidden" id="editarUsuarioId">
+        <input type="hidden" id="editarUsuarioClave">
+
+        <div class="mb-3">
+          <label for="editarUsuarioInput" class="form-label">Usuario</label>
+          <input type="text" id="editarUsuarioInput" class="form-control" required>
+        </div>
+
+        <div class="mb-3">
+          <label for="editarRolSelect" class="form-label">Rol</label>
+          <select id="editarRolSelect" class="form-select">
+            <option value="admin">Administrador</option>
+            <option value="docente">Docente</option>
+            <option value="personal">Personal</option>
+          </select>
+        </div>
+
+        <div id="editarUsuarioFeedback" class="alert alert-danger py-2 small d-none" role="alert"></div>
+
+        <div class="d-flex justify-content-between mt-4">
+          <button type="submit" id="btnGuardarEditarUsuario" class="btn btn-success fw-bold">Guardar Cambios</button>
+          <button type="button" id="btnCancelarEditarUsuario" class="btn btn-secondary" onclick="irAGestionUsuarios()">Cancelar</button>
+        </div>
+      </form>
+    </div>
+  </section>
+
+  <!-- ===================================================================== -->
+  <!-- VISTA: GESTIÓN DE DOCENTES - LISTADO (docentes/listado.jsp)           -->
+  <!-- ===================================================================== -->
+  <section id="view-docentes-listado" class="spa-view p-4">
+    <div class="container">
+      <div class="d-flex flex-wrap justify-content-between align-items-center mb-3">
+        <h3 class="mb-0">Gestión de Docentes</h3>
+        <button type="button" id="btnAbrirCrearDocenteDirecto" class="btn btn-success btn-sm" onclick="abrirCrearDocenteModal()">
+          + Registrar Ficha Docente (DocenteServlet)
+        </button>
+      </div>
+
+      <form id="formFiltroDocentes" class="row g-3 mb-4" onsubmit="filtrarDocentes(event)">
+        <div class="col-md-4">
+          <label for="filtroDocenteNombre" class="form-label">Buscar por nombre</label>
+          <input type="text" id="filtroDocenteNombre" class="form-control" placeholder="Nombre...">
+        </div>
+        <div class="col-md-4">
+          <label for="filtroDocenteIdioma" class="form-label">Idioma</label>
+          <select id="filtroDocenteIdioma" class="form-select">
+            <option value="todos">Todos</option>
+            <option value="inglés">Inglés</option>
+            <option value="japonés">Japonés</option>
+          </select>
+        </div>
+        <div class="col-md-3">
+          <label for="filtroDocenteNivel" class="form-label">Nivel</label>
+          <select id="filtroDocenteNivel" class="form-select">
+            <option value="todos">Todos</option>
+            <option value="Básico">Básico</option>
+            <option value="Básico 1">Básico 1</option>
+            <option value="Básico 2">Básico 2</option>
+            <option value="Intermedio">Intermedio</option>
+            <option value="Avanzado">Avanzado</option>
+          </select>
+        </div>
+        <div class="col-md-1 d-flex align-items-end">
+          <button type="submit" id="btnFiltrarDocentes" class="btn btn-primary w-100">Filtrar</button>
+        </div>
+      </form>
+
+      <div class="table-responsive">
+        <table id="tablaDocentes" class="table table-dark table-striped table-bordered align-middle w-100">
+          <thead class="table-light text-dark">
+            <tr>
+              <th>ID</th>
+              <th>Nombre</th>
+              <th>Idioma</th>
+              <th>Nivel</th>
+              <th>Turno</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="tbodyDocentes"></tbody>
+        </table>
+      </div>
+
+      <div class="d-flex justify-content-between mt-5 pt-4 border-top border-secondary">
+        <button type="button" id="btnVolverDesdeDocentes" class="btn btn-secondary" onclick="irAHomeSegunRol()">
+          Volver
+        </button>
+        <button type="button" id="btnLogoutDocentes" class="btn btn-danger" onclick="cerrarSesion()">
+          Cerrar Sesión
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================================================================== -->
+  <!-- VISTA: EDITAR DOCENTE (docentes/editar.jsp)                           -->
+  <!-- ===================================================================== -->
+  <section id="view-docentes-editar" class="spa-view light-form-wrapper">
+    <div class="card-form">
+      <h3 id="tituloFormDocente">Editar docente</h3>
+
+      <form id="formEditarDocente" onsubmit="guardarCambiosDocente(event)">
+        <input type="hidden" id="editarDocenteId">
+        <input type="hidden" id="editarDocenteModo" value="actualizar">
+
+        <div class="mb-3">
+          <label for="editarDocenteNombre" class="form-label">Nombre Completo</label>
+          <input type="text" id="editarDocenteNombre" class="form-control" required>
+        </div>
+
+        <div class="mb-3">
+          <label for="idiomaSelect" class="form-label">Idioma</label>
+          <select class="form-select" id="idiomaSelect" onchange="cargarNivelesDocente()">
+            <option value="inglés">Inglés</option>
+            <option value="japonés">Japonés</option>
+          </select>
+        </div>
+
+        <div class="mb-3">
+          <label for="nivelSelect" class="form-label">Nivel</label>
+          <select class="form-select" id="nivelSelect"></select>
+        </div>
+
+        <div class="mb-3">
+          <label for="editarDocenteTurno" class="form-label">Turno</label>
+          <select class="form-select" id="editarDocenteTurno"></select>
+        </div>
+
+        <div class="d-flex justify-content-between mt-4">
+          <button type="submit" id="btnGuardarDocente" class="btn btn-success fw-bold">Guardar Cambios</button>
+          <button type="button" id="btnCancelarDocente" class="btn btn-secondary" onclick="irAGestionDocentes()">Cancelar</button>
+        </div>
+      </form>
+    </div>
+  </section>
+
+  <!-- ===================================================================== -->
+  <!-- VISTA: GESTIÓN DE PERSONAL - LISTADO (personal/listado.jsp)           -->
+  <!-- ===================================================================== -->
+  <section id="view-personal-listado" class="spa-view p-4">
+    <div class="container">
+      <div class="d-flex flex-wrap justify-content-between align-items-center mb-3">
+        <h3 class="mb-0">Gestión de Personal</h3>
+        <button type="button" id="btnAbrirCrearPersonalDirecto" class="btn btn-success btn-sm" onclick="abrirCrearPersonalModal()">
+          + Registrar Ficha Personal (PersonalServlet)
+        </button>
+      </div>
+
+      <form id="formFiltroPersonal" class="row g-3 mb-4" onsubmit="filtrarPersonal(event)">
+        <div class="col-md-5">
+          <label for="filtroPersonalNombre" class="form-label">Buscar por nombre</label>
+          <input type="text" id="filtroPersonalNombre" class="form-control" placeholder="Nombre completo...">
+        </div>
+        <div class="col-md-4">
+          <label for="filtroPersonalCargo" class="form-label">Cargo</label>
+          <select id="filtroPersonalCargo" class="form-select">
+            <option value="todos">Todos</option>
+            <option value="Empleado">Empleado</option>
+            <option value="Gerente">Gerente</option>
+            <option value="Secretaria">Secretaria</option>
+            <option value="Encargado de Caja">Encargado de Caja</option>
+            <option value="Encargado de Mantenimiento">Encargado de Mantenimiento</option>
+            <option value="Encargado de Recursos Humanos">Encargado de Recursos Humanos</option>
+          </select>
+        </div>
+        <div class="col-md-3 d-flex align-items-end">
+          <button type="submit" id="btnFiltrarPersonal" class="btn btn-primary w-100">Filtrar</button>
+        </div>
+      </form>
+
+      <div class="table-responsive">
+        <table id="tablaPersonal" class="table table-dark table-striped table-bordered align-middle w-100">
+          <thead class="table-light text-dark">
+            <tr>
+              <th>ID</th>
+              <th>Nombre</th>
+              <th>Cargo</th>
+              <th>Turno</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="tbodyPersonal"></tbody>
+        </table>
+      </div>
+
+      <div class="d-flex justify-content-between mt-5 pt-4 border-top border-secondary">
+        <button type="button" id="btnVolverDesdePersonal" class="btn btn-secondary" onclick="irAHomeSegunRol()">
+          Volver
+        </button>
+        <button type="button" id="btnLogoutPersonal" class="btn btn-danger" onclick="cerrarSesion()">
+          Cerrar Sesión
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================================================================== -->
+  <!-- VISTA: EDITAR PERSONAL (personal/editar.jsp)                          -->
+  <!-- ===================================================================== -->
+  <section id="view-personal-editar" class="spa-view light-form-wrapper">
+    <div class="card-form">
+      <h3 id="tituloFormPersonal">Editar personal administrativo</h3>
+
+      <form id="formEditarPersonal" onsubmit="guardarCambiosPersonal(event)">
+        <input type="hidden" id="editarPersonalId">
+        <input type="hidden" id="editarPersonalModo" value="actualizar">
+
+        <div class="mb-3">
+          <label for="editarPersonalNombre" class="form-label">Nombre Completo</label>
+          <input type="text" id="editarPersonalNombre" class="form-control" required>
+        </div>
+
+        <div class="mb-3">
+          <label for="editarPersonalCargo" class="form-label">Cargo</label>
+          <select id="editarPersonalCargo" class="form-select" required>
+            <option value="Gerente">Gerente</option>
+            <option value="Secretaria">Secretaria</option>
+            <option value="Encargado de Caja">Encargado de Caja</option>
+            <option value="Encargado de Mantenimiento">Encargado de Mantenimiento</option>
+            <option value="Encargado de Recursos Humanos">Encargado de Recursos Humanos</option>
+            <option value="Empleado">Empleado</option>
+          </select>
+        </div>
+
+        <div class="mb-3">
+          <label for="editarPersonalTurno" class="form-label">Turno</label>
+          <select class="form-select" id="editarPersonalTurno"></select>
+        </div>
+
+        <div class="d-flex justify-content-between mt-4">
+          <button type="submit" id="btnGuardarPersonal" class="btn btn-success fw-bold">Guardar Cambios</button>
+          <button type="button" id="btnCancelarPersonal" class="btn btn-secondary" onclick="irAGestionPersonal()">Cancelar</button>
+        </div>
+      </form>
+    </div>
+  </section>
+
+  <!-- ===================================================================== -->
+  <!-- VISTA: GESTIÓN DE TURNOS LABORALES (TurnoServlet - RF-04)             -->
+  <!-- ===================================================================== -->
+  <section id="view-turnos-listado" class="spa-view p-4">
+    <div class="container">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h3 class="mb-0">Gestión de Turnos Laborales (RF-04)</h3>
+      </div>
+
+      <p class="text-secondary small mb-3">
+        Horarios oficiales de Carpenters Languages utilizados para el cálculo automático de puntualidad (hasta +10 min de tolerancia), tardanza y falta.
+      </p>
+
+      <div class="table-responsive">
+        <table class="table table-dark table-striped table-bordered align-middle">
+          <thead class="table-light text-dark">
+            <tr>
+              <th>ID Turno</th>
+              <th>Denominación</th>
+              <th>Hora Inicio</th>
+              <th>Tolerancia Puntualidad (+10 min)</th>
+              <th>Hora Fin</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="tbodyTurnos"></tbody>
+        </table>
+      </div>
+
+      <div class="d-flex justify-content-between mt-5 pt-4 border-top border-secondary">
+        <button type="button" id="btnVolverDesdeTurnos" class="btn btn-secondary" onclick="irAHomeSegunRol()">
+          Volver
+        </button>
+        <button type="button" id="btnLogoutTurnos" class="btn btn-danger" onclick="cerrarSesion()">
+          Cerrar Sesión
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================================================================== -->
+  <!-- VISTA: EDITAR TURNO (turnos/editar.jsp)                               -->
+  <!-- ===================================================================== -->
+  <section id="view-turnos-editar" class="spa-view light-form-wrapper">
+    <div class="card-form">
+      <h3>Editar horario de turno</h3>
+      <form id="formEditarTurno" onsubmit="guardarCambiosTurno(event)">
+        <input type="hidden" id="editarTurnoId">
+        <div class="mb-3">
+          <label for="editarTurnoInicio" class="form-label">Hora de Inicio</label>
+          <input type="time" id="editarTurnoInicio" class="form-control" required>
+        </div>
+        <div class="mb-3">
+          <label for="editarTurnoFin" class="form-label">Hora de Fin</label>
+          <input type="time" id="editarTurnoFin" class="form-control" required>
+        </div>
+        <div class="d-flex justify-content-between mt-4">
+          <button type="submit" id="btnGuardarTurno" class="btn btn-success fw-bold">Guardar Cambios</button>
+          <button type="button" id="btnCancelarTurno" class="btn btn-secondary" onclick="irAGestionTurnos()">Cancelar</button>
+        </div>
+      </form>
+    </div>
+  </section>
+
+  <!-- ===================================================================== -->
+  <!-- VISTA: REPORTE Y LISTADO DE ASISTENCIAS (asistencias/listado.jsp)     -->
+  <!-- ===================================================================== -->
+  <section id="view-asistencias-listado" class="spa-view p-4">
+    <div class="container">
+      <div class="d-flex flex-wrap justify-content-between align-items-center mb-3">
+        <h3 class="mb-0">Asistencias registradas</h3>
+        <button type="button" id="btnSimularFaltasDia" class="btn btn-outline-warning btn-sm" onclick="ejecutarGenerarFaltasDelDiaManual()">
+          Generar faltas pendientes de hoy (AsistenciaDAO)
+        </button>
+      </div>
+
+      <form id="formFiltroAsistencias" class="row g-3 mb-3" onsubmit="filtrarAsistencias(event)">
+        <div class="col-md-3">
+          <label for="filtroAsistenciaDesde" class="form-label">Desde</label>
+          <input type="date" id="filtroAsistenciaDesde" class="form-control">
+        </div>
+        <div class="col-md-3">
+          <label for="filtroAsistenciaHasta" class="form-label">Hasta</label>
+          <input type="date" id="filtroAsistenciaHasta" class="form-control">
+        </div>
+        <div class="col-md-3">
+          <label for="filtroAsistenciaUsuario" class="form-label">Usuario</label>
+          <input type="text" id="filtroAsistenciaUsuario" class="form-control" placeholder="Buscar nombre...">
+        </div>
+        <div class="col-md-2">
+          <label for="filtroAsistenciaEstado" class="form-label">Estado</label>
+          <select id="filtroAsistenciaEstado" class="form-select">
+            <option value="todos">Todos</option>
+            <option value="asistió">Asistió</option>
+            <option value="tardanza">Tardanza</option>
+            <option value="falta">Falta</option>
+          </select>
+        </div>
+        <div class="col-md-1 d-flex align-items-end">
+          <button type="submit" id="btnFiltrarAsistencias" class="btn btn-primary w-100">Filtrar</button>
+        </div>
+      </form>
+
+      <div class="table-responsive">
+        <table id="tablaAsistencia" class="table table-bordered table-striped table-dark align-middle w-100">
+          <thead class="table-light text-dark">
+            <tr>
+              <th>ID</th>
+              <th>Usuario</th>
+              <th>Fecha</th>
+              <th>Estado</th>
+            </tr>
+          </thead>
+          <tbody id="tbodyAsistencias"></tbody>
+        </table>
+      </div>
+
+      <div class="d-flex justify-content-between mt-4 pt-3 border-top border-secondary">
+        <button type="button" id="btnVolverDesdeAsistencias" class="btn btn-secondary" onclick="irAHomeSegunRol()">
+          Volver
+        </button>
+        <button type="button" id="btnLogoutAsistencias" class="btn btn-danger" onclick="cerrarSesion()">
+          Cerrar Sesión
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================================================================== -->
+  <!-- VISTA: MARCAR ASISTENCIA (asistencias/marcar.jsp)                     -->
+  <!-- ===================================================================== -->
+  <section id="view-asistencias-marcar" class="spa-view marcar-wrapper">
+    <button type="button" id="btnVolverPanelTrabajador" class="volver-btn-top" onclick="irAHomeSegunRol()">
+      &larr; Volver al Panel
+    </button>
+    <button type="button" id="btnLogoutMarcarTop" class="logout-btn-top" onclick="cerrarSesion()">
+      Cerrar Sesión
+    </button>
+
+    <div class="marcar-card">
+      <h2>Registro de asistencia</h2>
+
+      <div id="fechaReloj" class="marcar-date"></div>
+      <div id="horaReloj" class="marcar-time">00:00:00</div>
+      <div id="badgeTurnoAsignadoMarcar" class="small text-info mt-2 mb-3"></div>
+
+      <form id="formMarcarAsistencia" onsubmit="procesarMarcadoAsistencia(event)">
+        <button type="submit" id="btnSubmitMarcarAsistencia" class="btn btn-marcar-primary w-100 mt-2">
+          Marcar asistencia
+        </button>
+      </form>
+
+      <!-- Mensajes idénticos a marcar.jsp (ok, error, antes, noturno) -->
+      <div id="marcarMsgOk" class="msg-ok d-none"></div>
+      <div id="marcarMsgErr" class="msg-err d-none"></div>
+
+      <!-- Simulador de hora opcional para verificar fácilmente Turno 1 y Turno 2 -->
+      <div class="sim-clock-box">
+        <div class="form-check form-switch mb-2">
+          <input class="form-check-input" type="checkbox" id="switchHoraSimulada" onchange="alternarModoHoraSimulada()">
+          <label class="form-check-label text-light fw-semibold" for="switchHoraSimulada">
+            Simular hora de ingreso (para evaluar turnos)
+          </label>
+        </div>
+        <div id="panelHoraSimuladaControles" class="d-none">
+          <label for="inputHoraSimulada" class="form-label small text-secondary mb-1">
+            Selecciona hora (Turno 1: 08:00-14:00 | Turno 2: 16:00-22:00):
+          </label>
+          <input type="time" id="inputHoraSimulada" class="form-control form-control-sm dark-input" value="08:05" onchange="actualizarReloj()">
+          <div class="d-flex gap-1 mt-2 flex-wrap">
+            <button type="button" id="btnPresetPuntualT1" class="btn btn-sm btn-outline-success py-0 px-2" onclick="fijarPresetHora('08:05')">
+              08:05 (Asistió T1)
+            </button>
+            <button type="button" id="btnPresetTardanzaT1" class="btn btn-sm btn-outline-warning py-0 px-2" onclick="fijarPresetHora('08:25')">
+              08:25 (Tardanza T1)
+            </button>
+            <button type="button" id="btnPresetFaltaT1" class="btn btn-sm btn-outline-danger py-0 px-2" onclick="fijarPresetHora('14:30')">
+              14:30 (Falta T1)
+            </button>
+            <button type="button" id="btnPresetAntesT1" class="btn btn-sm btn-outline-secondary py-0 px-2" onclick="fijarPresetHora('07:30')">
+              07:30 (Antes T1)
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================================================================== -->
+  <!-- MODALES DE BOOTSTRAP 5.3 (Límite de 5 Usuarios y Confirmación Eliminar) -->
+  <!-- ===================================================================== -->
+  <div class="modal fade" id="modalLimiteUsuarios" tabindex="-1" aria-labelledby="modalLimiteUsuariosLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content bg-dark text-light border-danger">
+        <div class="modal-header border-secondary">
+          <h5 class="modal-title text-warning fw-bold" id="modalLimiteUsuariosLabel">
+            Límite de Versión de Prueba Alcanzado
+          </h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        </div>
+        <div class="modal-body" id="modalLimiteUsuariosTexto">
+          Se ha alcanzado el límite máximo de 5 usuarios en la versión de prueba
+        </div>
+        <div class="modal-footer border-secondary">
+          <button type="button" id="btnCerrarModalLimite" class="btn btn-primary" data-bs-dismiss="modal">Entendido</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="modalConfirmarEliminar" tabindex="-1" aria-labelledby="modalConfirmarEliminarLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content bg-dark text-light border-secondary">
+        <div class="modal-header border-secondary">
+          <h5 class="modal-title text-danger fw-bold" id="modalConfirmarEliminarLabel">Confirmar Eliminación</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        </div>
+        <div class="modal-body" id="modalConfirmarEliminarMensaje">
+          ¿Seguro que deseas eliminar este registro?
+        </div>
+        <div class="modal-footer border-secondary">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="button" id="btnConfirmarEliminarAccion" class="btn btn-danger" onclick="ejecutarEliminacionConfirmada()">
+            Eliminar
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- DEPENDENCIAS JS: jQuery 3.7.1, Bootstrap 5.3.2, DataTables 1.13.6      -->
+  <!-- ===================================================================== -->
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.css" onerror="void(0)"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+  <script src="https://cdn.datatables.net/buttons/2.4.2/js/dataTables.buttons.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+  <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.html5.min.js"></script>
+  <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.print.min.js"></script>
+
+  <!-- ===================================================================== -->
+  <!-- LÓGICA DE NEGOCIO, MODELO DAO EN MEMORIA Y CONTROLADORES JS           -->
+  <!-- ===================================================================== -->
+  <script>
+    /**
+     * CONFIGURACIÓN DE IDIOMA ESPAÑOL PARA DATATABLES (evita bloqueos de red)
+     */
+    const DATATABLES_ES = {
+      processing: "Procesando...",
+      lengthMenu: "Mostrar _MENU_ registros",
+      zeroRecords: "No se encontraron resultados",
+      emptyTable: "Ningún dato disponible en esta tabla",
+      info: "Mostrando _START_ a _END_ de _MAX_ registros",
+      infoEmpty: "Mostrando 0 a 0 de 0 registros",
+      infoFiltered: "(filtrado de un total de _MAX_ registros)",
+      search: "Buscar:",
+      paginate: {
+        first: "Primero",
+        last: "Último",
+        next: "Siguiente",
+        previous: "Anterior"
+      }
+    };
+
+    /**
+     * ESTADO VOLÁTIL EN MEMORIA TEMPORAL DE JAVASCRIPT
+     * Se reinicia por completo cada vez que se carga o recarga la página (onload del <body>).
+     */
+    const LIMITE_MAXIMO_USUARIOS = 5;
+    let contadorGlobalUsuarios = 0;
+    let usuarioSesionActual = null;
+
+    // Tablas relacionales simuladas en memoria (Esquema controlasistencia)
+    let dbTurnos = [];
+    let dbUsuarios = [];
+    let dbDocentes = [];
+    let dbPersonal = [];
+    let dbAsistencias = [];
+
+    // Autoincrementales simulados (AUTO_INCREMENT de MySQL)
+    let seqIdUsuario = 1;
+    let seqIdDocente = 1;
+    let seqIdPersonal = 1;
+    let seqIdAsistencia = 1;
+
+    // Instancias DataTables y reloj
+    let dtUsuariosInstance = null;
+    let dtDocentesInstance = null;
+    let dtPersonalInstance = null;
+    let dtAsistenciasInstance = null;
+    let intervaloReloj = null;
+    let accionEliminarPendiente = null;
+
+    /**
+     * FUNCIÓN DE PURGA TOTAL AL CARGAR <body>
+     * Garantiza cero persistencia entre recargas y reinicia el flujo en Pantalla 0.
+     */
+    function purgarYReiniciarSistema() {
+      try {
+        window.sessionStorage.clear();
+      } catch (e) {
+        // Ignorar en caso de restricción de contexto
+      }
+      try {
+        window.localStorage.clear();
+      } catch (e) {
+        // Ignorar en caso de restricción de contexto
+      }
+
+      // Resetear secuencias y estado
+      seqIdUsuario = 1;
+      seqIdDocente = 1;
+      seqIdPersonal = 1;
+      seqIdAsistencia = 1;
+      usuarioSesionActual = null;
+
+      // 1. Precargar Turnos Oficiales (Turno 1: 08:00-14:00, Turno 2: 16:00-22:00)
+      dbTurnos = [
+        { idTurno: 1, horaInicio: "08:00", horaFin: "14:00" },
+        { idTurno: 2, horaInicio: "16:00", horaFin: "22:00" }
+      ];
+
+      // 2. Precargar únicamente los 2 usuarios requeridos por la Especificación de Prueba:
+      //    - Administrador: admin / admin123
+      //    - Docente: docente / doc123
+      dbUsuarios = [
+        { idUsuario: seqIdUsuario++, usuario: "admin", clave: "admin123", rol: "admin" },
+        { idUsuario: seqIdUsuario++, usuario: "docente", clave: "doc123", rol: "docente" }
+      ];
+
+      // Contador global sincronizado con el total de usuarios en memoria (inicia en 2 de 5 máx.)
+      contadorGlobalUsuarios = dbUsuarios.length;
+
+      // 3. Vincular el registro en la tabla 'docentes' para el usuario 'docente' (idUsuario = 2)
+      dbDocentes = [
+        {
+          idDocente: seqIdDocente++,
+          idUsuario: 2,
+          nombreCompleto: "docente",
+          idioma: "inglés",
+          nivel: "Intermedio",
+          idTurno: 1
+        }
+      ];
+
+      // 4. Tabla 'personal' inicia vacía (se poblará automáticamente cuando el admin cree un usuario con rol 'personal')
+      dbPersonal = [];
+
+      // 5. Precargar registros de asistencia históricos iniciales (como en pág. 7 del documento)
+      const hoyISO = obtenerFechaActualISO();
+      dbAsistencias = [
+        { idAsistencia: seqIdAsistencia++, idUsuario: 2, nombreUsuario: "docente", fecha: "2025-10-09", estado: "tardanza" },
+        { idAsistencia: seqIdAsistencia++, idUsuario: 2, nombreUsuario: "docente", fecha: "2025-10-12", estado: "asistió" },
+        { idAsistencia: seqIdAsistencia++, idUsuario: 2, nombreUsuario: "docente", fecha: "2025-11-25", estado: "asistió" }
+      ];
+
+      // Limpiar inputs de Pantalla 0 y Login
+      const emailInput = document.getElementById("trialEmailInput");
+      if (emailInput) emailInput.value = "";
+      const loginUser = document.getElementById("loginUsuario");
+      const loginPass = document.getElementById("loginClave");
+      if (loginUser) loginUser.value = "";
+      if (loginPass) loginPass.value = "";
+
+      actualizarBadgesContadorUsuarios();
+      iniciarRelojTiempoReal();
+
+      // Mostrar estrictamente la Pantalla 0 (Acceso a Prueba Gratuita)
+      mostrarVista("view-free-trial", "theme-login");
+    }
+
+    /**
+     * NAVEGACIÓN SPA SIN RECARGAS
+     */
+    function mostrarVista(idVista, claseTemaBody) {
+      document.querySelectorAll(".spa-view").forEach(v => v.classList.remove("active-view"));
+      const target = document.getElementById(idVista);
+      if (target) {
+        target.classList.add("active-view");
+      }
+      document.body.className = claseTemaBody || "theme-login";
+      actualizarBadgesContadorUsuarios();
+    }
+
+    function actualizarBadgesContadorUsuarios() {
+      contadorGlobalUsuarios = dbUsuarios.length;
+      const badgeHome = document.getElementById("badgeContadorUsuariosHome");
+      if (badgeHome) {
+        badgeHome.textContent = `Usuarios en sistema: ${contadorGlobalUsuarios} / ${LIMITE_MAXIMO_USUARIOS} máx.`;
+      }
+      const badgeListado = document.getElementById("badgeLimiteUsuarios");
+      if (badgeListado) {
+        badgeListado.textContent = `Capacidad de prueba: ${contadorGlobalUsuarios} / ${LIMITE_MAXIMO_USUARIOS} usuarios`;
+        badgeListado.className = contadorGlobalUsuarios >= LIMITE_MAXIMO_USUARIOS
+          ? "badge bg-danger text-white fs-6"
+          : "badge bg-info text-dark fs-6";
+      }
+    }
+
+    /**
+     * PANTALLA 0: VALIDACIÓN ESTRICTA DE CORREO POR REGEX
+     * No guarda el correo ni crea usuario; únicamente desbloquea el paso a la Pantalla 1 (Login).
+     */
+    document.getElementById("formFreeTrial").addEventListener("submit", function (event) {
+      event.preventDefault();
+      const inputCorreo = document.getElementById("trialEmailInput");
+      const alertaError = document.getElementById("trialEmailError");
+      const valorCorreo = (inputCorreo.value || "").trim();
+
+      // Expresión regular estricta para estructura real ejemplo@dominio.com
+      const regexEmailValido = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+
+      if (!regexEmailValido.test(valorCorreo)) {
+        alertaError.classList.remove("d-none");
+        inputCorreo.focus();
+        return;
+      }
+
+      // Correo válido: ocultar error, descartar variable sin guardar y pasar a Pantalla 1 (Login)
+      alertaError.classList.add("d-none");
+      inputCorreo.value = "";
+      mostrarVista("view-login", "theme-login");
+    });
+
+    /**
+     * PANTALLA 1: LOGIN GLOBAL (Replica LoginServlet.java + UsuarioDAO.validar)
+     */
+    function autocompletarLogin(usuario, clave) {
+      document.getElementById("loginUsuario").value = usuario;
+      document.getElementById("loginClave").value = clave;
+      document.getElementById("loginErrorAlert").classList.add("d-none");
+    }
+
+    document.getElementById("formLogin").addEventListener("submit", function (event) {
+      event.preventDefault();
+      const usuarioTxt = document.getElementById("loginUsuario").value.trim();
+      const claveTxt = document.getElementById("loginClave").value;
+      const errorAlert = document.getElementById("loginErrorAlert");
+
+      const usuarioEncontrado = dbUsuarios.find(
+        u => u.usuario.toLowerCase() === usuarioTxt.toLowerCase() && u.clave === claveTxt
+      );
+
+      if (!usuarioEncontrado) {
+        errorAlert.classList.remove("d-none");
+        return;
+      }
+
+      errorAlert.classList.add("d-none");
+      usuarioSesionActual = { ...usuarioEncontrado };
+      irAHomeSegunRol();
+    });
+
+    function irAHomeSegunRol() {
+      if (!usuarioSesionActual) {
+        mostrarVista("view-login", "theme-login");
+        return;
+      }
+
+      if (usuarioSesionActual.rol === "admin") {
+        document.getElementById("adminWelcomeUser").textContent = usuarioSesionActual.usuario;
+        mostrarVista("view-home-admin", "theme-admin");
+      } else if (usuarioSesionActual.rol === "docente") {
+        document.getElementById("docenteWelcomeUser").textContent = usuarioSesionActual.usuario;
+        const idTurno = obtenerTurnoUsuario(usuarioSesionActual.idUsuario);
+        const t = buscarTurno(idTurno);
+        document.getElementById("docenteInfoTurno").textContent = t
+          ? `Turno asignado: Turno ${t.idTurno} (${t.horaInicio} - ${t.horaFin})`
+          : "Sin turno asignado";
+        mostrarVista("view-home-docente", "theme-docente");
+      } else if (usuarioSesionActual.rol === "personal") {
+        document.getElementById("personalWelcomeUser").textContent = usuarioSesionActual.usuario;
+        const idTurno = obtenerTurnoUsuario(usuarioSesionActual.idUsuario);
+        const t = buscarTurno(idTurno);
+        document.getElementById("personalInfoTurno").textContent = t
+          ? `Turno asignado: Turno ${t.idTurno} (${t.horaInicio} - ${t.horaFin})`
+          : "Sin turno asignado";
+        mostrarVista("view-home-personal", "theme-docente");
+      }
+    }
+
+    /**
+     * LOGOUT (Replica LogoutServlet.java)
+     */
+    function cerrarSesion() {
+      usuarioSesionActual = null;
+      document.getElementById("loginUsuario").value = "";
+      document.getElementById("loginClave").value = "";
+      document.getElementById("loginErrorAlert").classList.add("d-none");
+      mostrarVista("view-login", "theme-login");
+    }
+
+    /**
+     * =========================================================================
+     * MÓDULO 1: GESTIÓN DE USUARIOS (Replica UsuarioServlet.java + UsuarioDAO)
+     * Incluye la Regla Estricta del Límite de 5 Usuarios en la versión de prueba
+     * =========================================================================
+     */
+    function irAGestionUsuarios() {
+      if (!verificarPermisoAdmin()) return;
+      document.getElementById("filtroUsuarioNombre").value = "";
+      document.getElementById("filtroUsuarioRol").value = "todos";
+      renderizarTablaUsuarios("", "todos");
+      mostrarVista("view-usuarios-listado", "theme-table-dark");
+    }
+
+    function filtrarUsuarios(event) {
+      event.preventDefault();
+      const nombre = document.getElementById("filtroUsuarioNombre").value.trim();
+      const rol = document.getElementById("filtroUsuarioRol").value;
+      renderizarTablaUsuarios(nombre, rol);
+    }
+
+    function renderizarTablaUsuarios(filtroNombre, filtroRol) {
+      if (dtUsuariosInstance) {
+        dtUsuariosInstance.destroy();
+        dtUsuariosInstance = null;
+      }
+
+      const tbody = document.getElementById("tbodyUsuarios");
+      tbody.innerHTML = "";
+
+      const listaFiltrada = dbUsuarios
+        .filter(u => {
+          const coincideNombre = !filtroNombre || u.usuario.toLowerCase().includes(filtroNombre.toLowerCase());
+          const coincideRol = !filtroRol || filtroRol === "todos" || u.rol === filtroRol;
+          return coincideNombre && coincideRol;
+        })
+        .sort((a, b) => b.idUsuario - a.idUsuario); // ORDER BY id_usuario DESC (UsuarioDAO)
+
+      listaFiltrada.forEach(usr => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${usr.idUsuario}</td>
+          <td>${escaparHTML(usr.usuario)}</td>
+          <td>${escaparHTML(usr.rol)}</td>
+          <td>
+            <button type="button" class="btn btn-warning btn-sm me-1" onclick="abrirEditarUsuario(${usr.idUsuario})">
+              Editar
+            </button>
+            <button type="button" class="btn btn-danger btn-sm" onclick="solicitarEliminarUsuario(${usr.idUsuario})">
+              Eliminar
+            </button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      dtUsuariosInstance = $("#tablaUsuarios").DataTable({
+        searching: false,
+        language: DATATABLES_ES,
+        order: [[0, "desc"]]
+      });
+
+      actualizarBadgesContadorUsuarios();
+    }
+
+    function mostrarModalLimiteCincoUsuarios() {
+      const textoModal = document.getElementById("modalLimiteUsuariosTexto");
+      if (textoModal) {
+        textoModal.textContent = "Se ha alcanzado el límite máximo de 5 usuarios en la versión de prueba";
+      }
+      const modalEl = document.getElementById("modalLimiteUsuarios");
+      const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+      modal.show();
+    }
+
+    function intentarAbrirCrearUsuario() {
+      if (!verificarPermisoAdmin()) return;
+
+      // Verificación estricta del contador global de usuarios antes de abrir el formulario
+      contadorGlobalUsuarios = dbUsuarios.length;
+      if (contadorGlobalUsuarios >= LIMITE_MAXIMO_USUARIOS) {
+        mostrarModalLimiteCincoUsuarios();
+        return;
+      }
+
+      document.getElementById("crearUsuarioInput").value = "";
+      document.getElementById("crearClaveInput").value = "";
+      document.getElementById("crearRolSelect").value = "admin";
+      document.getElementById("crearUsuarioFeedback").classList.add("d-none");
+      mostrarVista("view-usuarios-crear", "theme-form-light");
+    }
+
+    function guardarNuevoUsuario(event) {
+      event.preventDefault();
+      if (!verificarPermisoAdmin()) return;
+
+      // Doble bloqueo condicional fuerte en la función CRUD de inserción
+      contadorGlobalUsuarios = dbUsuarios.length;
+      if (contadorGlobalUsuarios >= LIMITE_MAXIMO_USUARIOS) {
+        mostrarModalLimiteCincoUsuarios();
+        return;
+      }
+
+      const nombreUsuario = document.getElementById("crearUsuarioInput").value.trim();
+      const claveUsuario = document.getElementById("crearClaveInput").value;
+      const rolUsuario = document.getElementById("crearRolSelect").value;
+      const feedback = document.getElementById("crearUsuarioFeedback");
+
+      if (!nombreUsuario || !claveUsuario) {
+        feedback.textContent = "Completa tanto el nombre de usuario como la clave.";
+        feedback.classList.remove("d-none");
+        return;
+      }
+
+      const existeDuplicado = dbUsuarios.some(
+        u => u.usuario.toLowerCase() === nombreUsuario.toLowerCase()
+      );
+      if (existeDuplicado) {
+        feedback.textContent = "Ese nombre de usuario ya está registrado en el sistema.";
+        feedback.classList.remove("d-none");
+        return;
+      }
+
+      const idNuevo = seqIdUsuario++;
+      const nuevoUsuario = {
+        idUsuario: idNuevo,
+        usuario: nombreUsuario,
+        clave: claveUsuario,
+        rol: rolUsuario
+      };
+      dbUsuarios.push(nuevoUsuario);
+      contadorGlobalUsuarios = dbUsuarios.length;
+
+      // Replica exacta de UsuarioServlet.java (líneas 55-56):
+      // Si el rol es "docente", inserta automáticamente en DocenteDAO con idioma="inglés", nivel="Básico", idTurno=1
+      if (rolUsuario === "docente") {
+        dbDocentes.push({
+          idDocente: seqIdDocente++,
+          idUsuario: idNuevo,
+          nombreCompleto: nombreUsuario,
+          idioma: "inglés",
+          nivel: "Básico",
+          idTurno: 1
+        });
+      }
+
+      // Si el rol es "personal", inserta automáticamente en PersonalDAO con cargo="Empleado", idTurno=1
+      if (rolUsuario === "personal") {
+        dbPersonal.push({
+          idPersonal: seqIdPersonal++,
+          idUsuario: idNuevo,
+          nombreCompleto: nombreUsuario,
+          cargo: "Empleado",
+          idTurno: 1
+        });
+      }
+
+      irAGestionUsuarios();
+    }
+
+    function abrirEditarUsuario(idUsuario) {
+      if (!verificarPermisoAdmin()) return;
+      const usr = dbUsuarios.find(u => u.idUsuario === idUsuario);
+      if (!usr) return;
+
+      document.getElementById("editarUsuarioId").value = usr.idUsuario;
+      document.getElementById("editarUsuarioClave").value = usr.clave;
+      document.getElementById("editarUsuarioInput").value = usr.usuario;
+      document.getElementById("editarRolSelect").value = usr.rol;
+      document.getElementById("editarUsuarioFeedback").classList.add("d-none");
+
+      mostrarVista("view-usuarios-editar", "theme-form-light");
+    }
+
+    function actualizarUsuarioExistente(event) {
+      event.preventDefault();
+      if (!verificarPermisoAdmin()) return;
+
+      const id = parseInt(document.getElementById("editarUsuarioId").value, 10);
+      const nuevoNombre = document.getElementById("editarUsuarioInput").value.trim();
+      const clave = document.getElementById("editarUsuarioClave").value;
+      const rolNuevo = document.getElementById("editarRolSelect").value;
+      const feedback = document.getElementById("editarUsuarioFeedback");
+
+      const original = dbUsuarios.find(u => u.idUsuario === id);
+      if (!original) return;
+
+      const duplicado = dbUsuarios.some(
+        u => u.idUsuario !== id && u.usuario.toLowerCase() === nuevoNombre.toLowerCase()
+      );
+      if (duplicado) {
+        feedback.textContent = "Otro usuario ya utiliza ese nombre.";
+        feedback.classList.remove("d-none");
+        return;
+      }
+
+      const rolAnterior = original.rol;
+      original.usuario = nuevoNombre;
+      original.clave = clave;
+      original.rol = rolNuevo;
+
+      // Replica exacta de cambio de rol en UsuarioServlet.java (págs. 56-57)
+      if (rolNuevo !== rolAnterior) {
+        if (rolAnterior === "docente") {
+          dbDocentes = dbDocentes.filter(d => d.idUsuario !== id);
+        }
+        if (rolAnterior === "personal") {
+          dbPersonal = dbPersonal.filter(p => p.idUsuario !== id);
+        }
+        if (rolNuevo === "docente") {
+          dbDocentes.push({
+            idDocente: seqIdDocente++,
+            idUsuario: id,
+            nombreCompleto: nuevoNombre,
+            idioma: "inglés",
+            nivel: "Básico",
+            idTurno: 1
+          });
+        }
+        if (rolNuevo === "personal") {
+          dbPersonal.push({
+            idPersonal: seqIdPersonal++,
+            idUsuario: id,
+            nombreCompleto: nuevoNombre,
+            cargo: "Empleado",
+            idTurno: 1
+          });
+        }
+      }
+
+      // Actualizar nombreUsuario en asistencias vinculadas
+      dbAsistencias.forEach(a => {
+        if (a.idUsuario === id) {
+          a.nombreUsuario = nuevoNombre;
+        }
+      });
+
+      irAGestionUsuarios();
+    }
+
+    function solicitarEliminarUsuario(idUsuario) {
+      const usr = dbUsuarios.find(u => u.idUsuario === idUsuario);
+      if (!usr) return;
+
+      document.getElementById("modalConfirmarEliminarMensaje").textContent =
+        `¿Seguro que deseas eliminar al usuario "${usr.usuario}"?`;
+      accionEliminarPendiente = function () {
+        dbUsuarios = dbUsuarios.filter(u => u.idUsuario !== idUsuario);
+        // Eliminación en cascada como en UsuarioServlet.java (pág. 55):
+        // docenteDao.eliminarPorUsuario(id); personalDao.eliminarPorUsuario(id);
+        dbDocentes = dbDocentes.filter(d => d.idUsuario !== idUsuario);
+        dbPersonal = dbPersonal.filter(p => p.idUsuario !== idUsuario);
+        dbAsistencias = dbAsistencias.filter(a => a.idUsuario !== idUsuario);
+        contadorGlobalUsuarios = dbUsuarios.length;
+        irAGestionUsuarios();
+      };
+
+      const modal = bootstrap.Modal.getOrCreateInstance(document.getElementById("modalConfirmarEliminar"));
+      modal.show();
+    }
+
+    /**
+     * =========================================================================
+     * MÓDULO 2: GESTIÓN DE DOCENTES (Replica DocenteServlet.java + DocenteDAO)
+     * =========================================================================
+     */
+    function irAGestionDocentes() {
+      if (!verificarPermisoAdmin()) return;
+      document.getElementById("filtroDocenteNombre").value = "";
+      document.getElementById("filtroDocenteIdioma").value = "todos";
+      document.getElementById("filtroDocenteNivel").value = "todos";
+      renderizarTablaDocentes("", "todos", "todos");
+      mostrarVista("view-docentes-listado", "theme-table-dark");
+    }
+
+    function filtrarDocentes(event) {
+      event.preventDefault();
+      const nombre = document.getElementById("filtroDocenteNombre").value.trim();
+      const idioma = document.getElementById("filtroDocenteIdioma").value;
+      const nivel = document.getElementById("filtroDocenteNivel").value;
+      renderizarTablaDocentes(nombre, idioma, nivel);
+    }
+
+    function renderizarTablaDocentes(filtroNombre, filtroIdioma, filtroNivel) {
+      if (dtDocentesInstance) {
+        dtDocentesInstance.destroy();
+        dtDocentesInstance = null;
+      }
+
+      const tbody = document.getElementById("tbodyDocentes");
+      tbody.innerHTML = "";
+
+      const listaFiltrada = dbDocentes
+        .filter(d => {
+          const okNombre = !filtroNombre || d.nombreCompleto.toLowerCase().includes(filtroNombre.toLowerCase());
+          const okIdioma = !filtroIdioma || filtroIdioma === "todos" || d.idioma.toLowerCase() === filtroIdioma.toLowerCase();
+          const okNivel = !filtroNivel || filtroNivel === "todos" || d.nivel === filtroNivel;
+          return okNombre && okIdioma && okNivel;
+        })
+        .sort((a, b) => b.idDocente - a.idDocente); // ORDER BY id_docente DESC
+
+      listaFiltrada.forEach(d => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${d.idDocente}</td>
+          <td>${escaparHTML(d.nombreCompleto)}</td>
+          <td>${escaparHTML(d.idioma)}</td>
+          <td>${escaparHTML(d.nivel)}</td>
+          <td>${d.idTurno}</td>
+          <td>
+            <button type="button" class="btn btn-warning btn-sm me-1" onclick="abrirEditarDocente(${d.idDocente})">
+              Editar
+            </button>
+            <button type="button" class="btn btn-danger btn-sm" onclick="solicitarEliminarDocente(${d.idDocente})">
+              Eliminar
+            </button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      dtDocentesInstance = $("#tablaDocentes").DataTable({
+        searching: false,
+        language: DATATABLES_ES,
+        order: [[0, "desc"]]
+      });
+    }
+
+    function poblarSelectTurnos(selectId, turnoSeleccionado) {
+      const sel = document.getElementById(selectId);
+      if (!sel) return;
+      sel.innerHTML = "";
+      dbTurnos.forEach(t => {
+        const opt = document.createElement("option");
+        opt.value = t.idTurno;
+        opt.textContent = `${t.horaInicio} - ${t.horaFin}`;
+        if (Number(t.idTurno) === Number(turnoSeleccionado)) {
+          opt.selected = true;
+        }
+        sel.appendChild(opt);
+      });
+    }
+
+    // Replica exacta del script dinámico de niveles en docentes/editar.jsp (pág. 34)
+    let nivelDocenteActualTemp = "Básico 1";
+    function cargarNivelesDocente() {
+      const nivelSelect = document.getElementById("nivelSelect");
+      const idiomaSelect = document.getElementById("idiomaSelect");
+      const nivelesIngles = ["Básico 1", "Básico 2", "Intermedio", "Avanzado"];
+      const nivelesJapones = ["Básico 1", "Básico 2"];
+
+      nivelSelect.innerHTML = "";
+      const niveles = (idiomaSelect.value === "japonés") ? nivelesJapones : nivelesIngles;
+
+      niveles.forEach(n => {
+        const opt = document.createElement("option");
+        opt.value = n;
+        opt.textContent = n;
+        if (n === nivelDocenteActualTemp) {
+          opt.selected = true;
+        }
+        nivelSelect.appendChild(opt);
+      });
+    }
+
+    function abrirCrearDocenteModal() {
+      if (!verificarPermisoAdmin()) return;
+      document.getElementById("tituloFormDocente").textContent = "Registrar docente";
+      document.getElementById("editarDocenteId").value = "";
+      document.getElementById("editarDocenteModo").value = "insertar";
+      document.getElementById("editarDocenteNombre").value = "";
+      document.getElementById("idiomaSelect").value = "inglés";
+      nivelDocenteActualTemp = "Básico 1";
+      cargarNivelesDocente();
+      poblarSelectTurnos("editarDocenteTurno", 1);
+      mostrarVista("view-docentes-editar", "theme-form-light");
+    }
+
+    function abrirEditarDocente(idDocente) {
+      if (!verificarPermisoAdmin()) return;
+      const d = dbDocentes.find(item => item.idDocente === idDocente);
+      if (!d) return;
+
+      document.getElementById("tituloFormDocente").textContent = "Editar docente";
+      document.getElementById("editarDocenteId").value = d.idDocente;
+      document.getElementById("editarDocenteModo").value = "actualizar";
+      document.getElementById("editarDocenteNombre").value = d.nombreCompleto;
+      document.getElementById("idiomaSelect").value = d.idioma;
+      nivelDocenteActualTemp = d.nivel === "Básico" ? "Básico 1" : d.nivel;
+      cargarNivelesDocente();
+      poblarSelectTurnos("editarDocenteTurno", d.idTurno);
+
+      mostrarVista("view-docentes-editar", "theme-form-light");
+    }
+
+    function guardarCambiosDocente(event) {
+      event.preventDefault();
+      if (!verificarPermisoAdmin()) return;
+
+      const modo = document.getElementById("editarDocenteModo").value;
+      const nombre = document.getElementById("editarDocenteNombre").value.trim();
+      const idioma = document.getElementById("idiomaSelect").value;
+      const nivel = document.getElementById("nivelSelect").value;
+      const turno = parseInt(document.getElementById("editarDocenteTurno").value, 10);
+
+      if (modo === "insertar") {
+        dbDocentes.push({
+          idDocente: seqIdDocente++,
+          idUsuario: 0,
+          nombreCompleto: nombre,
+          idioma: idioma,
+          nivel: nivel,
+          idTurno: turno
+        });
+      } else {
+        const id = parseInt(document.getElementById("editarDocenteId").value, 10);
+        const docente = dbDocentes.find(d => d.idDocente === id);
+        if (docente) {
+          docente.nombreCompleto = nombre;
+          docente.idioma = idioma;
+          docente.nivel = nivel;
+          docente.idTurno = turno;
+        }
+      }
+
+      irAGestionDocentes();
+    }
+
+    function solicitarEliminarDocente(idDocente) {
+      const d = dbDocentes.find(item => item.idDocente === idDocente);
+      if (!d) return;
+
+      document.getElementById("modalConfirmarEliminarMensaje").textContent =
+        `¿Seguro que deseas eliminar al docente "${d.nombreCompleto}"?`;
+      accionEliminarPendiente = function () {
+        dbDocentes = dbDocentes.filter(item => item.idDocente !== idDocente);
+        irAGestionDocentes();
+      };
+
+      const modal = bootstrap.Modal.getOrCreateInstance(document.getElementById("modalConfirmarEliminar"));
+      modal.show();
+    }
+
+    /**
+     * =========================================================================
+     * MÓDULO 3: GESTIÓN DE PERSONAL (Replica PersonalServlet.java + PersonalDAO)
+     * =========================================================================
+     */
+    function irAGestionPersonal() {
+      if (!verificarPermisoAdmin()) return;
+      document.getElementById("filtroPersonalNombre").value = "";
+      document.getElementById("filtroPersonalCargo").value = "todos";
+      renderizarTablaPersonal("", "todos");
+      mostrarVista("view-personal-listado", "theme-table-dark");
+    }
+
+    function filtrarPersonal(event) {
+      event.preventDefault();
+      const nombre = document.getElementById("filtroPersonalNombre").value.trim();
+      const cargo = document.getElementById("filtroPersonalCargo").value;
+      renderizarTablaPersonal(nombre, cargo);
+    }
+
+    function renderizarTablaPersonal(filtroNombre, filtroCargo) {
+      if (dtPersonalInstance) {
+        dtPersonalInstance.destroy();
+        dtPersonalInstance = null;
+      }
+
+      const tbody = document.getElementById("tbodyPersonal");
+      tbody.innerHTML = "";
+
+      const listaFiltrada = dbPersonal
+        .filter(p => {
+          const okNombre = !filtroNombre || p.nombreCompleto.toLowerCase().includes(filtroNombre.toLowerCase());
+          const okCargo = !filtroCargo || filtroCargo === "todos" || p.cargo === filtroCargo;
+          return okNombre && okCargo;
+        })
+        .sort((a, b) => b.idPersonal - a.idPersonal); // ORDER BY id_personal DESC
+
+      listaFiltrada.forEach(p => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${p.idPersonal}</td>
+          <td>${escaparHTML(p.nombreCompleto)}</td>
+          <td>${escaparHTML(p.cargo)}</td>
+          <td>${p.idTurno}</td>
+          <td>
+            <button type="button" class="btn btn-warning btn-sm me-1" onclick="abrirEditarPersonal(${p.idPersonal})">
+              Editar
+            </button>
+            <button type="button" class="btn btn-danger btn-sm" onclick="solicitarEliminarPersonal(${p.idPersonal})">
+              Eliminar
+            </button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      dtPersonalInstance = $("#tablaPersonal").DataTable({
+        searching: false,
+        language: DATATABLES_ES,
+        order: [[0, "desc"]]
+      });
+    }
+
+    function abrirCrearPersonalModal() {
+      if (!verificarPermisoAdmin()) return;
+      document.getElementById("tituloFormPersonal").textContent = "Registrar personal administrativo";
+      document.getElementById("editarPersonalId").value = "";
+      document.getElementById("editarPersonalModo").value = "insertar";
+      document.getElementById("editarPersonalNombre").value = "";
+      document.getElementById("editarPersonalCargo").value = "Secretaria";
+      poblarSelectTurnos("editarPersonalTurno", 1);
+      mostrarVista("view-personal-editar", "theme-form-light");
+    }
+
+    function abrirEditarPersonal(idPersonal) {
+      if (!verificarPermisoAdmin()) return;
+      const p = dbPersonal.find(item => item.idPersonal === idPersonal);
+      if (!p) return;
+
+      document.getElementById("tituloFormPersonal").textContent = "Editar personal administrativo";
+      document.getElementById("editarPersonalId").value = p.idPersonal;
+      document.getElementById("editarPersonalModo").value = "actualizar";
+      document.getElementById("editarPersonalNombre").value = p.nombreCompleto;
+      document.getElementById("editarPersonalCargo").value = p.cargo;
+      poblarSelectTurnos("editarPersonalTurno", p.idTurno);
+
+      mostrarVista("view-personal-editar", "theme-form-light");
+    }
+
+    function guardarCambiosPersonal(event) {
+      event.preventDefault();
+      if (!verificarPermisoAdmin()) return;
+
+      const modo = document.getElementById("editarPersonalModo").value;
+      const nombre = document.getElementById("editarPersonalNombre").value.trim();
+      const cargo = document.getElementById("editarPersonalCargo").value;
+      const turno = parseInt(document.getElementById("editarPersonalTurno").value, 10);
+
+      if (modo === "insertar") {
+        dbPersonal.push({
+          idPersonal: seqIdPersonal++,
+          idUsuario: 0,
+          nombreCompleto: nombre,
+          cargo: cargo,
+          idTurno: turno
+        });
+      } else {
+        const id = parseInt(document.getElementById("editarPersonalId").value, 10);
+        const reg = dbPersonal.find(p => p.idPersonal === id);
+        if (reg) {
+          reg.nombreCompleto = nombre;
+          reg.cargo = cargo;
+          reg.idTurno = turno;
+        }
+      }
+
+      irAGestionPersonal();
+    }
+
+    function solicitarEliminarPersonal(idPersonal) {
+      const p = dbPersonal.find(item => item.idPersonal === idPersonal);
+      if (!p) return;
+
+      document.getElementById("modalConfirmarEliminarMensaje").textContent =
+        `¿Seguro que deseas eliminar el registro de "${p.nombreCompleto}"?`;
+      accionEliminarPendiente = function () {
+        dbPersonal = dbPersonal.filter(item => item.idPersonal !== idPersonal);
+        irAGestionPersonal();
+      };
+
+      const modal = bootstrap.Modal.getOrCreateInstance(document.getElementById("modalConfirmarEliminar"));
+      modal.show();
+    }
+
+    function ejecutarEliminacionConfirmada() {
+      if (typeof accionEliminarPendiente === "function") {
+        accionEliminarPendiente();
+        accionEliminarPendiente = null;
+      }
+      const modalEl = document.getElementById("modalConfirmarEliminar");
+      const modal = bootstrap.Modal.getInstance(modalEl);
+      if (modal) modal.hide();
+    }
+
+    /**
+     * =========================================================================
+     * MÓDULO 4: GESTIÓN DE TURNOS (Replica TurnoServlet.java + TurnoDAO - RF-04)
+     * =========================================================================
+     */
+    function irAGestionTurnos() {
+      if (!verificarPermisoAdmin()) return;
+      renderizarTablaTurnos();
+      mostrarVista("view-turnos-listado", "theme-table-dark");
+    }
+
+    function renderizarTablaTurnos() {
+      const tbody = document.getElementById("tbodyTurnos");
+      tbody.innerHTML = "";
+
+      dbTurnos.forEach(t => {
+        const limitePuntual = sumarDiezMinutos(t.horaInicio);
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${t.idTurno}</td>
+          <td>Turno ${t.idTurno} (${t.idTurno === 1 ? "Mañana" : "Tarde"})</td>
+          <td>${t.horaInicio}</td>
+          <td>Hasta ${limitePuntual} (Asistió)</td>
+          <td>${t.horaFin}</td>
+          <td>
+            <button type="button" class="btn btn-warning btn-sm" onclick="abrirEditarTurno(${t.idTurno})">
+              Editar Horario
+            </button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function abrirEditarTurno(idTurno) {
+      if (!verificarPermisoAdmin()) return;
+      const t = buscarTurno(idTurno);
+      if (!t) return;
+      document.getElementById("editarTurnoId").value = t.idTurno;
+      document.getElementById("editarTurnoInicio").value = t.horaInicio;
+      document.getElementById("editarTurnoFin").value = t.horaFin;
+      mostrarVista("view-turnos-editar", "theme-form-light");
+    }
+
+    function guardarCambiosTurno(event) {
+      event.preventDefault();
+      if (!verificarPermisoAdmin()) return;
+      const id = parseInt(document.getElementById("editarTurnoId").value, 10);
+      const inicio = document.getElementById("editarTurnoInicio").value;
+      const fin = document.getElementById("editarTurnoFin").value;
+      const t = buscarTurno(id);
+      if (t) {
+        t.horaInicio = inicio;
+        t.horaFin = fin;
+      }
+      irAGestionTurnos();
+    }
+
+    /**
+     * =========================================================================
+     * MÓDULO 5: CONTROL Y REPORTE DE ASISTENCIAS (AsistenciaServlet + DAO)
+     * =========================================================================
+     */
+    function obtenerTurnoUsuario(idUsuario) {
+      const doc = dbDocentes.find(d => d.idUsuario === idUsuario);
+      if (doc && doc.idTurno) return doc.idTurno;
+      const per = dbPersonal.find(p => p.idUsuario === idUsuario);
+      if (per && per.idTurno) return per.idTurno;
+      return 0;
+    }
+
+    function buscarTurno(idTurno) {
+      return dbTurnos.find(t => t.idTurno === Number(idTurno)) || null;
+    }
+
+    function irAVerAsistencias() {
+      if (!verificarPermisoAdmin()) return;
+      document.getElementById("filtroAsistenciaDesde").value = "";
+      document.getElementById("filtroAsistenciaHasta").value = "";
+      document.getElementById("filtroAsistenciaUsuario").value = "";
+      document.getElementById("filtroAsistenciaEstado").value = "todos";
+      renderizarTablaAsistencias("", "", "", "todos");
+      mostrarVista("view-asistencias-listado", "theme-table-dark");
+    }
+
+    function ejecutarGenerarFaltasDelDiaManual() {
+      const hoy = new Date();
+      const diaSemana = hoy.getDay(); // 0 Domingo, 6 Sábado
+      const hoyISO = obtenerFechaActualISO();
+
+      // En AsistenciaDAO.generarFaltasDelDia(), para todo usuario docente/personal sin asistencia hoy se inserta "falta"
+      const trabajadores = dbUsuarios.filter(u => u.rol === "docente" || u.rol === "personal");
+      trabajadores.forEach(u => {
+        const yaTiene = dbAsistencias.some(a => a.idUsuario === u.idUsuario && a.fecha === hoyISO);
+        if (!yaTiene && diaSemana !== 0 && diaSemana !== 6) {
+          dbAsistencias.push({
+            idAsistencia: seqIdAsistencia++,
+            idUsuario: u.idUsuario,
+            nombreUsuario: u.usuario,
+            fecha: hoyISO,
+            estado: "falta"
+          });
+        } else if (!yaTiene) {
+          // Si se ejecuta en fin de semana durante una demostración académica, también permite evidenciar el registro
+          dbAsistencias.push({
+            idAsistencia: seqIdAsistencia++,
+            idUsuario: u.idUsuario,
+            nombreUsuario: u.usuario,
+            fecha: hoyISO,
+            estado: "falta"
+          });
+        }
+      });
+
+      filtrarAsistencias(new Event("submit"));
+    }
+
+    function filtrarAsistencias(event) {
+      if (event && event.preventDefault) event.preventDefault();
+      const desde = document.getElementById("filtroAsistenciaDesde").value;
+      const hasta = document.getElementById("filtroAsistenciaHasta").value;
+      const usuario = document.getElementById("filtroAsistenciaUsuario").value.trim();
+      const estado = document.getElementById("filtroAsistenciaEstado").value;
+      renderizarTablaAsistencias(desde, hasta, usuario, estado);
+    }
+
+    function renderizarTablaAsistencias(desde, hasta, nombreUsuario, estado) {
+      if (dtAsistenciasInstance) {
+        dtAsistenciasInstance.destroy();
+        dtAsistenciasInstance = null;
+      }
+
+      const tbody = document.getElementById("tbodyAsistencias");
+      tbody.innerHTML = "";
+
+      const desdeLim = desde || "2000-01-01";
+      const hastaLim = hasta || "2099-12-31";
+
+      const listaFiltrada = dbAsistencias
+        .filter(a => {
+          const okFecha = a.fecha >= desdeLim && a.fecha <= hastaLim;
+          const okNombre = !nombreUsuario || a.nombreUsuario.toLowerCase().includes(nombreUsuario.toLowerCase());
+          const okEstado = !estado || estado === "todos" || a.estado === estado;
+          return okFecha && okNombre && okEstado;
+        })
+        .sort((a, b) => (b.fecha.localeCompare(a.fecha)) || (b.idAsistencia - a.idAsistencia));
+
+      listaFiltrada.forEach(a => {
+        let badgeHTML = `<span class="badge bg-danger">Falta</span>`;
+        if (a.estado === "asistió") {
+          badgeHTML = `<span class="badge bg-success">Asistió</span>`;
+        } else if (a.estado === "tardanza") {
+          badgeHTML = `<span class="badge bg-warning text-dark">Tardanza</span>`;
+        }
+
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${a.idAsistencia}</td>
+          <td>${escaparHTML(a.nombreUsuario)}</td>
+          <td>${a.fecha}</td>
+          <td>${badgeHTML}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      // DataTables con botones Excel, PDF, Imprimir (exactamente como asistencias/listado.jsp pág. 44)
+      dtAsistenciasInstance = $("#tablaAsistencia").DataTable({
+        dom: "Bfrtip",
+        buttons: [
+          { extend: "excel", text: "Excel", className: "btn btn-success btn-sm" },
+          { extend: "pdf", text: "PDF", className: "btn btn-danger btn-sm" },
+          { extend: "print", text: "Imprimir", className: "btn btn-info btn-sm" }
+        ],
+        language: DATATABLES_ES,
+        order: [[2, "desc"]]
+      });
+    }
+
+    /**
+     * =========================================================================
+     * MÓDULO 6: MARCADO DE ASISTENCIA (Replica marcar.jsp + AsistenciaServlet)
+     * Lógica exacta de horas (pág. 64):
+     * - Si horaActual < inicio -> Error: "No puedes marcar antes del inicio de tu turno."
+     * - Si horaActual > fin -> estado = "falta"
+     * - Si horaActual <= inicio + 10 min -> estado = "asistió"
+     * - Si horaActual > inicio + 10 min y <= fin -> estado = "tardanza"
+     * =========================================================================
+     */
+    function irAMarcarAsistencia() {
+      if (!usuarioSesionActual || (usuarioSesionActual.rol !== "docente" && usuarioSesionActual.rol !== "personal")) {
+        mostrarVista("view-login", "theme-login");
+        return;
+      }
+
+      document.getElementById("marcarMsgOk").classList.add("d-none");
+      document.getElementById("marcarMsgErr").classList.add("d-none");
+
+      const idTurno = obtenerTurnoUsuario(usuarioSesionActual.idUsuario);
+      const t = buscarTurno(idTurno);
+      const badgeTurno = document.getElementById("badgeTurnoAsignadoMarcar");
+      if (t) {
+        badgeTurno.textContent = `Turno ${t.idTurno} asignado: ${t.horaInicio} a ${t.horaFin} (Puntual hasta ${sumarDiezMinutos(t.horaInicio)})`;
+      } else {
+        badgeTurno.textContent = "Sin turno laboral asignado";
+      }
+
+      actualizarReloj();
+      mostrarVista("view-asistencias-marcar", "theme-docente");
+    }
+
+    function alternarModoHoraSimulada() {
+      const activo = document.getElementById("switchHoraSimulada").checked;
+      const panel = document.getElementById("panelHoraSimuladaControles");
+      if (activo) {
+        panel.classList.remove("d-none");
+      } else {
+        panel.classList.add("d-none");
+      }
+      actualizarReloj();
+    }
+
+    function fijarPresetHora(horaHHMM) {
+      document.getElementById("switchHoraSimulada").checked = true;
+      document.getElementById("panelHoraSimuladaControles").classList.remove("d-none");
+      document.getElementById("inputHoraSimulada").value = horaHHMM;
+      actualizarReloj();
+    }
+
+    function obtenerHoraActualMinutosYTexto() {
+      const usarSimulada = document.getElementById("switchHoraSimulada") &&
+                           document.getElementById("switchHoraSimulada").checked;
+      if (usarSimulada) {
+        const val = document.getElementById("inputHoraSimulada").value || "08:05";
+        const partes = val.split(":");
+        const h = parseInt(partes[0], 10) || 0;
+        const m = parseInt(partes[1], 10) || 0;
+        return {
+          minutosTotales: h * 60 + m,
+          horaHHMM: `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`,
+          textoReloj: `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}:00 (Simulada)`
+        };
+      }
+
+      const f = new Date();
+      const h = f.getHours();
+      const m = f.getMinutes();
+      return {
+        minutosTotales: h * 60 + m,
+        horaHHMM: `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`,
+        textoReloj: f.toLocaleTimeString("es-PE", {
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit"
+        })
+      };
+    }
+
+    function actualizarReloj() {
+      const f = new Date();
+      const elHora = document.getElementById("horaReloj");
+      const elFecha = document.getElementById("fechaReloj");
+      if (!elHora || !elFecha) return;
+
+      const infoHora = obtenerHoraActualMinutosYTexto();
+      elHora.textContent = infoHora.textoReloj;
+      elFecha.textContent = f.toLocaleDateString("es-PE", {
+        weekday: "long",
+        year: "numeric",
+        month: "long",
+        day: "numeric"
+      });
+    }
+
+    function iniciarRelojTiempoReal() {
+      if (intervaloReloj) {
+        clearInterval(intervaloReloj);
+      }
+      intervaloReloj = setInterval(actualizarReloj, 1000);
+      actualizarReloj();
+    }
+
+    function procesarMarcadoAsistencia(event) {
+      event.preventDefault();
+      if (!usuarioSesionActual) return;
+
+      const msgOk = document.getElementById("marcarMsgOk");
+      const msgErr = document.getElementById("marcarMsgErr");
+      msgOk.classList.add("d-none");
+      msgErr.classList.add("d-none");
+
+      const idUsuario = usuarioSesionActual.idUsuario;
+      const hoyISO = obtenerFechaActualISO();
+      const infoHora = obtenerHoraActualMinutosYTexto();
+
+      // 1. Verificar si ya registró asistencia hoy (AsistenciaServlet pág. 63)
+      const asistenciaHoy = dbAsistencias.find(
+        a => a.idUsuario === idUsuario && a.fecha === hoyISO
+      );
+
+      if (asistenciaHoy && asistenciaHoy.estado !== "falta") {
+        msgErr.textContent = "Ya registraste tu asistencia hoy.";
+        msgErr.classList.remove("d-none");
+        return;
+      }
+
+      // 2. Obtener turno de DocenteDAO o PersonalDAO
+      const idTurno = obtenerTurnoUsuario(idUsuario);
+      const turno = buscarTurno(idTurno);
+
+      if (!turno) {
+        msgErr.textContent = "No tienes un turno asignado para registrar asistencia.";
+        msgErr.classList.remove("d-none");
+        return;
+      }
+
+      const minInicio = convertirHoraAMinutos(turno.horaInicio);
+      const minFin = convertirHoraAMinutos(turno.horaFin);
+      const minActual = infoHora.minutosTotales;
+
+      // 3. Regla: si horaActual.isBefore(inicio) -> antes=1
+      if (minActual < minInicio) {
+        msgErr.textContent = "No puedes marcar antes del inicio de tu turno.";
+        msgErr.classList.remove("d-none");
+        return;
+      }
+
+      // 4. Cálculo exacto de estado ("asistió", "tardanza" o "falta")
+      let estadoCalculado = "";
+      if (minActual > minFin) {
+        estadoCalculado = "falta";
+      } else if (minActual <= minInicio + 10) {
+        estadoCalculado = "asistió";
+      } else {
+        estadoCalculado = "tardanza";
+      }
+
+      // 5. Insertar o actualizar registro del día
+      if (asistenciaHoy) {
+        asistenciaHoy.estado = estadoCalculado;
+      } else {
+        dbAsistencias.push({
+          idAsistencia: seqIdAsistencia++,
+          idUsuario: idUsuario,
+          nombreUsuario: usuarioSesionActual.usuario,
+          fecha: hoyISO,
+          estado: estadoCalculado
+        });
+      }
+
+      msgOk.innerHTML = `Asistencia registrada (${estadoCalculado.toUpperCase()})<br>${hoyISO} - ${infoHora.horaHHMM}`;
+      msgOk.classList.remove("d-none");
+    }
+
+    /**
+     * UTILIDADES AUXILIARES
+     */
+    function verificarPermisoAdmin() {
+      if (!usuarioSesionActual || usuarioSesionActual.rol !== "admin") {
+        mostrarVista("view-login", "theme-login");
+        return false;
+      }
+      return true;
+    }
+
+    function obtenerFechaActualISO() {
+      const f = new Date();
+      const yyyy = f.getFullYear();
+      const mm = String(f.getMonth() + 1).padStart(2, "0");
+      const dd = String(f.getDate()).padStart(2, "0");
+      return `${yyyy}-${mm}-${dd}`;
+    }
+
+    function convertirHoraAMinutos(horaHHMM) {
+      const partes = (horaHHMM || "00:00").split(":");
+      return (parseInt(partes[0], 10) || 0) * 60 + (parseInt(partes[1], 10) || 0);
+    }
+
+    function sumarDiezMinutos(horaHHMM) {
+      const total = convertirHoraAMinutos(horaHHMM) + 10;
+      const h = Math.floor(total / 60) % 24;
+      const m = total % 60;
+      return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
+    }
+
+    function escaparHTML(texto) {
+      const div = document.createElement("div");
+      div.textContent = texto == null ? "" : String(texto);
+      return div.innerHTML;
+    }
+  </script>
+</body>
+</html>
